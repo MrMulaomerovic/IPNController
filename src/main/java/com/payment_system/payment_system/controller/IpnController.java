@@ -1,8 +1,6 @@
 package com.payment_system.payment_system.controller;
 
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,9 +10,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.comparator.Comparators;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,8 +32,8 @@ public class IpnController {
 			return "no_signature_passphrase_provided";
 		}
 
-		parameters.put("sha_sign", null);
-		parameters.put("SHASIGN", null);
+		parameters.remove("sha_sign");
+		parameters.remove("SHASIGN");
 
 		if (convertKeysToUppercase) {
 			sortCaseSensetive = false;
@@ -67,7 +63,7 @@ public class IpnController {
 				value = StringEscapeUtils.unescapeHtml4(value);
 			}
 
-			boolean isEmpty = value != null && value != "";
+			boolean isEmpty = value == null && value == "";
 			if (isEmpty) {
 				continue;
 			}
@@ -79,29 +75,20 @@ public class IpnController {
 			shaString += upperkey + "=" + value + shaPassphrase;
 		}
 
-		String digestString =  new String(DigestUtils.sha512(shaString), Charset.defaultCharset());
-		String shaSign = StringUtils.upperCase(digestString);
+		String shaSign = DigestUtils.sha512Hex(shaString).toUpperCase();
 		return shaSign;
 	}
 
 	@GetMapping("/test")
-	public ResponseEntity<Void> test() {
+	public ResponseEntity<String> test() throws UnsupportedEncodingException, NoSuchAlgorithmException {
 		Map<String, String> map = new HashMap<>();
-		map.put("sha_sign", "abc");
-		map.put("SHASIGN", "ABC");
-		try {
-			String result = digistoreSignature("passphrase", map, false, false);
-			System.out.println(result);
-			System.out.println("");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		map.put("a1", "a1");
+		map.put("a2", "a2");
 
-		return ResponseEntity.ok().body(null);
+		String result = digistoreSignature("passphrase", map, false, false);
+		System.out.println(result);
+
+		return ResponseEntity.ok().body(result);
 	}
 
 }
