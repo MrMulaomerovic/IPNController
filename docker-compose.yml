@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  mysql:
+    container_name: payment_mysql
+    image: mysql:8.0.28
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: payment
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+    ports:
+      - 3306:3306
+    volumes:
+      - /user/containers/payment_mysql:/var/lib/mysql
+    networks:
+      payment_network:
+        ipv4_address: 10.10.11.2
+
+networks:
+  payment_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - ip-range: 10.10.11.0/29
+          subnet: 10.10.11.0/29
+          gateway: 10.10.11.1
