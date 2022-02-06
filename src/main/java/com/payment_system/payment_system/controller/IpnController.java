@@ -1,31 +1,33 @@
 package com.payment_system.payment_system.controller;
 
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class IpnController {
 
+	@Value("${digistore.ipn.passphrase}")
+	private String ipnPassphrase;
+
 	private String digistoreSignature(
 			String shaPassphrase,
 			Map<String, String> parameters,
 			boolean convertKeysToUppercase,
-			boolean doHtmlDecode) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+			boolean doHtmlDecode) {
 		convertKeysToUppercase = false;
 		doHtmlDecode = false;
 
-		String algorythm = "sha512";
 		boolean sortCaseSensetive = true;
 
 		if (shaPassphrase == null || shaPassphrase == "") {
@@ -45,7 +47,6 @@ public class IpnController {
 			keysToSort.add(sortCaseSensetive ? key : key.toUpperCase());
 		}
 
-		// $keys_to_sort, SORT_STRING
 		keysToSort = keysToSort
 				.stream()
 				.sorted()
@@ -79,16 +80,84 @@ public class IpnController {
 		return shaSign;
 	}
 
-	@GetMapping("/test")
-	public ResponseEntity<String> test() throws UnsupportedEncodingException, NoSuchAlgorithmException {
-		Map<String, String> map = new HashMap<>();
-		map.put("a1", "a1");
-		map.put("a2", "a2");
+	@PostMapping(path = "/ipn", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE })
+	public ResponseEntity<String> ipn(@RequestParam Map<String, String> body) {
+		String event = body.get("event");
+		String apiMode = body.get("api_mode");
 
-		String result = digistoreSignature("passphrase", map, false, false);
-		System.out.println(result);
+		if (ipnPassphrase != "") {
+			String receivedSignature = body.get("sha_sign");
+			String expectedSignature = digistoreSignature(ipnPassphrase, body, false, false);
 
-		return ResponseEntity.ok().body(result);
+			if (!receivedSignature.equals(expectedSignature)) {
+				return ResponseEntity.badRequest().body("ERROR: invalid sha signature");
+			}
+		}
+
+		switch (event) {
+			case "on_payment": {
+				String orderId = body.get("order_id");
+
+				String productId = body.get("product_id");
+				String productName = body.get("product_name");
+				String billingType = body.get("billing_type");
+
+				switch (billingType) {
+					case "single_payment": {
+						String numberPayments = "0";
+						String paySequenceNo = "0";
+						break;
+					}
+					case "installment": {
+						String numberPayments = body.get("order_item_number_of_installments");
+						String paySequenceNo = body.get("pay_sequence_no");
+						break;
+					}
+					case "subscription": {
+						String numberPayments = "0";
+						String paySequenceNo = body.get("pay_sequence_no");
+						break;
+					}
+				}
+
+				String email = body.get("email");
+				String firstName = body.get("address_first_name");
+				String lastName = body.get("address_last_name");
+				String addressStreet = body.get("address_street_name");
+				String addressStreetNo = body.get("address_street_number");
+				String addressCity = body.get("address_city");
+				String addressState = body.get("address_state");
+				String addressZipcode = body.get("address_zipcode");
+				String addressPhoneNo = body.get("address_phone_no");
+
+				boolean isTestMode = apiMode != "live";
+
+				boolean doTransferMemberShipDataToDigistore = false;
+				if (doTransferMemberShipDataToDigistore) {
+					return ResponseEntity.ok("OK");
+				}
+
+				String username = "some_username";
+				String password = "some_password";
+				String loginUrl = "http://domain.com/login";
+				String thankyouUrl = "http://domain.com/thank_you";
+
+				String showOn = "all"; // e.g.: 'all', 'invoice', 'invoice,receipt_page,order_confirmation_email' -
+										// seperate multiple targets by comma
+				String hideOn = "invoice"; // e.g.: 'none', 'invoice', 'invoice,receipt_page,order_confirmation_email' -
+											// seperate multiple targets by comma
+
+				String headline = "Your access data"; // displayed above the membership access data
+
+				return ResponseEntity.ok("OK"
+						+ "thankyou_url: " + username
+						+ " password: " + loginUrl
+						+ " headline: " + showOn
+						+ " hide_on: " + hideOn);
+			}
+		}
+
+		return ResponseEntity.ok(null);
 	}
 
 }
