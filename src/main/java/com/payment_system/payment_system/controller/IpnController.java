@@ -253,6 +253,6 @@ public class IpnController {
 				return ResponseEntity.ok("OK"); // Unknow test
 
 		}
-		return ResponseEntity.ok(null); // Obavezno provjeriti položaj ovog returna
+		return ResponseEntity.ok(null); // Obavezno provjeriti položaj ovog return-a
 	}
 }
