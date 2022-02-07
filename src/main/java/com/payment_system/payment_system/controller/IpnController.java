@@ -96,6 +96,7 @@ public class IpnController {
 
 		switch (event) {
 			case "on_payment": {
+
 				String orderId = body.get("order_id");
 
 				String productId = body.get("product_id");
@@ -132,6 +133,8 @@ public class IpnController {
 
 				boolean isTestMode = apiMode != "live";
 
+				// EDIT HERE: Add the Java code to store your order in your database
+
 				boolean doTransferMemberShipDataToDigistore = false;
 				if (doTransferMemberShipDataToDigistore) {
 					return ResponseEntity.ok("OK");
@@ -155,9 +158,101 @@ public class IpnController {
 						+ " headline: " + showOn
 						+ " hide_on: " + hideOn);
 			}
+
+			case "on_payment_missed": {
+
+				String orderId = body.get("order_id");
+
+				boolean isTestMode = apiMode != "live";
+
+				// EDIT HERE: Add the Java code to cancel the subscription with the
+				// missed payment. If the payment continues, a new
+				// "on_payment" call is run.
+
+				return ResponseEntity.ok("OK");
+			}
+			case "on refund": {
+
+				String orderId = body.get("order_id");
+
+				boolean isTestMode = apiMode != "live";
+
+				// EDIT HERE: Add the Java code to cancel and undeliver the order.
+
+				return ResponseEntity.ok("OK");
+			}
+
+			case "on_chargeback": {
+
+				String orderId = body.get("order_id");
+
+				boolean isTestMode = apiMode != "live";
+
+				// EDIT HERE: Add the Java code to cancel and undeliver the order.
+
+				return ResponseEntity.ok("OK");
+			}
+
+			case "on_rebill_resumed": {
+
+				String orderId = body.get("order_id");
+
+				boolean isTestMode = apiMode != "live";
+
+				// EDIT HERE: Add the Java code to handle a resumed rebilling.
+				// IMPORTANT: This event does not mean, that a payment has been completed.
+				// It just means, the a payment will be tried, if it is due.
+
+				return ResponseEntity.ok("OK");
+			}
+
+			case "on_rebill_cancelled": {
+
+				String orderId = body.get("order_id");
+
+				boolean isTestMode = apiMode != "live";
+
+				// EDIT HERE: Add the Java code to handle stopped rebillings.
+				// IMPORTANT: This event is sent at the point of time, when the customer's
+				// cancellation of therebilling is processed. Please cancel the
+				// access to the paid conentent using the "on_payment_missed" event.
+
+				return ResponseEntity.ok("OK");
+			}
+
+			case "on_affiliation": {
+
+				String email = body.get("email");
+				String digistoreId = body.get("affiliate_name");
+				String promolink = body.get("affiliate_link");
+				String language = body.get("language");
+
+				String firstName = body.get("address_first_name");
+				String lastName = body.get("address_last_name");
+
+				String addressStreet = body.get("address_street_name");
+				String addressStreetNo = body.get("address_street_number");
+				String addressCity = body.get("address_city");
+				String addressState = body.get("address_state");
+				String addressZipcode = body.get("address_zipcode");
+				String addressPhoneNo = body.get("address_phone_no");
+
+				String productId = body.get("product_id");
+				String productName = body.get("product_name");
+				String merchantId = body.get("merchant_id");
+
+				boolean isTestMode = apiMode != "live";
+
+				// EDIT HERE: Add the Java code to handle new affiliations
+
+				return ResponseEntity.ok("OK");
+			}
+
+			default:
+
+				return ResponseEntity.ok("OK"); // Unknow test
+
 		}
 
-		return ResponseEntity.ok(null);
 	}
-
 }
