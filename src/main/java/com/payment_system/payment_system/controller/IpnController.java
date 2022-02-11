@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -93,7 +92,7 @@ public class IpnController {
 		String event = body.get("event");
 		String apiMode = body.get("api_mode");
 
-		if (ipnPassphrase != "") {
+		if (ipnPassphrase != null || ipnPassphrase != "") {
 			String receivedSignature = body.get("sha_sign");
 			String expectedSignature = digistoreSignature(ipnPassphrase, body, false, false);
 
