@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.java.Log;
+
+@Log
 @RestController
 public class IpnController {
 
@@ -80,7 +84,7 @@ public class IpnController {
 		return shaSign;
 	}
 
-	@PostMapping(path = "/ipn", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE })
+	@PostMapping(path = "/ipn", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
 	public ResponseEntity<String> ipn(@RequestParam Map<String, String> body) {
 		String event = body.get("event");
 		String apiMode = body.get("api_mode");
