@@ -84,7 +84,7 @@ public class IpnController {
 		return shaSign;
 	}
 
-	@PostMapping(path = "/ipn", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+	@PostMapping(path = "/ipn", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
 	public ResponseEntity<String> ipn(@RequestParam Map<String, String> body) {
 		String event = body.get("event");
 		String apiMode = body.get("api_mode");
