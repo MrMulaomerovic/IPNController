@@ -86,6 +86,10 @@ public class IpnController {
 
 	@PostMapping(path = "/ipn", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
 	public ResponseEntity<String> ipn(@RequestParam Map<String, String> body) {
+		for (Map.Entry entry : body.entrySet())
+		{
+		    log.info("key: " + entry.getKey() + "; value: " + entry.getValue());
+		}
 		String event = body.get("event");
 		String apiMode = body.get("api_mode");
 
@@ -93,6 +97,8 @@ public class IpnController {
 			String receivedSignature = body.get("sha_sign");
 			String expectedSignature = digistoreSignature(ipnPassphrase, body, false, false);
 
+			log.info("receivedSignature: " + receivedSignature);
+			log.info("expectedSignature: " + expectedSignature);
 			if (!receivedSignature.equals(expectedSignature)) {
 				return ResponseEntity.badRequest().body("ERROR: invalid sha signature");
 			}
